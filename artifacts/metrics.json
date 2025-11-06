@@ -1,0 +1,21 @@
+{
+  "symbol": "AAPL",
+  "rmse": {
+    "lstm": 20.815763017248116,
+    "gru": 9.452526533870993
+  },
+  "backtest": {
+    "lstm": {
+      "strategy_total_return": 0.062464356422424316,
+      "buyhold_total_return": 1.5082213878631592,
+      "final_equity_strategy": 1.0624643564224243,
+      "final_equity_buyhold": 2.508221387863159
+    },
+    "gru": {
+      "strategy_total_return": 0.19705212116241455,
+      "buyhold_total_return": 1.5082213878631592,
+      "final_equity_strategy": 1.1970521211624146,
+      "final_equity_buyhold": 2.508221387863159
+    }
+  }
+}
