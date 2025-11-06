@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Prediction - AI Trading Insights</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #0ea5e9;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 999px;
+            font-size: 0.875rem;
+            color: #60a5fa;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .metric {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-value.positive {
+            color: var(--success);
+        }
+
+        .metric-value.negative {
+            color: var(--danger);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .prediction-result {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+        }
+
+        .prediction-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .prediction-row:last-child {
+            border-bottom: none;
+        }
+
+        .prediction-label {
+            color: var(--text-secondary);
+        }
+
+        .prediction-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .info-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .info-section h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-section li:last-child {
+            border-bottom: none;
+        }
+
+        .info-section li strong {
+            color: var(--text-primary);
+        }
+
+        .symbol-search {
+            position: relative;
+        }
+
+        .symbol-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .symbol-dropdown.active {
+            display: block;
+        }
+
+        .symbol-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .symbol-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📈 Stock Price Prediction</h1>
+            <p>Advanced AI-Powered Trading Insights using LSTM & GRU Neural Networks</p>
+            <div class="badges">
+                <span class="badge">LSTM Neural Network</span>
+                <span class="badge">GRU Neural Network</span>
+                <span class="badge">Technical Indicators (SMA20, SMA50, RSI14)</span>
+                <span class="badge">Backtesting & Evaluation</span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h2>
+                    <span class="card-icon">📊</span>
+                    Price Predictions Visualization
+                </h2>
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+                <div id="chartError" class="error" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h2>
+                    <span class="card-icon">🔮</span>
+                    Make Prediction
+                </h2>
+                <div class="form-group">
+                    <label for="symbol">Stock/ETF Symbol</label>
+                    <div class="symbol-search">
+                        <input type="text" id="symbol" placeholder="e.g., AAPL, MSFT, TSLA" value="AAPL" autocomplete="off">
+                        <div id="symbolDropdown" class="symbol-dropdown"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="model">Model</label>
+                        <select id="model">
+                            <option value="lstm">LSTM</option>
+                            <option value="gru">GRU</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="seqLen">Sequence Length</label>
+                        <input type="number" id="seqLen" value="60" min="10" max="200">
+                    </div>
+                </div>
+                <button id="predictBtn">Predict Next Price</button>
+                <div id="predictionResult"></div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>
+                    <span class="card-icon">📉</span>
+                    Model Performance Metrics
+                </h2>
+                <div id="metricsContainer" class="loading">Loading metrics...</div>
+            </div>
+
+            <div class="card">
+                <h2>
+                    <span class="card-icon">💹</span>
+                    Backtest Results
+                </h2>
+                <div id="backtestContainer" class="loading">Loading backtest results...</div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>📚 How It Works</h3>
+            <ul>
+                <li><strong>Data Collection:</strong> Historical stock price data from 7,000+ stocks and 1,300+ ETFs</li>
+                <li><strong>Technical Indicators:</strong> Moving averages (SMA20, SMA50) and RSI (14-period) are calculated</li>
+                <li><strong>Preprocessing:</strong> Data is normalized and transformed into time-series sequences</li>
+                <li><strong>Model Training:</strong> Deep learning models (LSTM & GRU) are trained on historical patterns</li>
+                <li><strong>Evaluation:</strong> RMSE (Root Mean Square Error) measures prediction accuracy</li>
+                <li><strong>Backtesting:</strong> Strategy performance is tested against historical data</li>
+                <li><strong>Visualization:</strong> Interactive charts show predictions vs actual prices</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Resolve API base robustly for both file:// and served modes
+        // Priority: explicit env via query (?api=...), then same-origin, then localhost fallback
+        const urlParams = new URLSearchParams(window.location.search);
+        const explicitApi = urlParams.get('api');
+        const API_BASE = explicitApi || (window.location.protocol === 'file:' ? 'http://localhost:8000' : '');
+        let priceChart = null;
+        let availableSymbols = { stocks: [], etfs: [] };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChart();
+            loadMetrics();
+            loadSymbols();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('predictBtn').addEventListener('click', makePrediction);
+            document.getElementById('symbol').addEventListener('input', handleSymbolInput);
+            document.getElementById('symbol').addEventListener('focus', () => {
+                if (availableSymbols.stocks.length > 0 || availableSymbols.etfs.length > 0) {
+                    showSymbolDropdown();
+                }
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.symbol-search')) {
+                    document.getElementById('symbolDropdown').classList.remove('active');
+                }
+            });
+        }
+
+        function handleSymbolInput(e) {
+            const query = e.target.value.toUpperCase();
+            if (query.length < 1) return;
+            
+            const filtered = [
+                ...availableSymbols.stocks.filter(s => s.startsWith(query)),
+                ...availableSymbols.etfs.filter(s => s.startsWith(query))
+            ].slice(0, 10);
+            
+            const dropdown = document.getElementById('symbolDropdown');
+            dropdown.innerHTML = filtered.map(s => 
+                `<div class="symbol-item" onclick="selectSymbol('${s}')">${s}</div>`
+            ).join('');
+            dropdown.classList.toggle('active', filtered.length > 0);
+        }
+
+        function selectSymbol(symbol) {
+            document.getElementById('symbol').value = symbol;
+            document.getElementById('symbolDropdown').classList.remove('active');
+        }
+
+        window.selectSymbol = selectSymbol;
+
+        async function loadSymbols() {
+            try {
+                const res = await fetch(`${API_BASE}/symbols`);
+                const data = await res.json();
+                if (data.error) {
+                    console.error('Error loading symbols:', data.error);
+                    return;
+                }
+                availableSymbols = data;
+            } catch (error) {
+                console.error('Error loading symbols:', error);
+            }
+        }
+
+        function showSymbolDropdown() {
+            const query = document.getElementById('symbol').value.toUpperCase();
+            const filtered = [
+                ...availableSymbols.stocks.filter(s => s.startsWith(query)),
+                ...availableSymbols.etfs.filter(s => s.startsWith(query))
+            ].slice(0, 10);
+            
+            const dropdown = document.getElementById('symbolDropdown');
+            dropdown.innerHTML = filtered.map(s => 
+                `<div class="symbol-item" onclick="selectSymbol('${s}')">${s}</div>`
+            ).join('');
+            dropdown.classList.add('active');
+        }
+
+        async function loadChart() {
+            try {
+                const res = await fetch(`${API_BASE}/chart`);
+                const data = await res.json();
+                
+                if (data.error) {
+                    document.getElementById('chartError').textContent = data.error;
+                    document.getElementById('chartError').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('chartError').style.display = 'none';
+                renderChart(data);
+            } catch (error) {
+                document.getElementById('chartError').textContent = 'Failed to load chart data';
+                document.getElementById('chartError').style.display = 'block';
+            }
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            
+            if (priceChart) {
+                priceChart.destroy();
+            }
+
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.date,
+                    datasets: [
+                        {
+                            label: 'Actual Price',
+                            data: data.actual,
+                            borderColor: '#f1f5f9',
+                            backgroundColor: 'rgba(241, 245, 249, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'LSTM Prediction',
+                            data: data.lstm,
+                            borderColor: '#60a5fa',
+                            backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.1,
+                            borderDash: [5, 5]
+                        },
+                        {
+                            label: 'GRU Prediction',
+                            data: data.gru,
+                            borderColor: '#34d399',
+                            backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.1,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#94a3b8',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        async function loadMetrics() {
+            try {
+                const res = await fetch(`${API_BASE}/metrics`);
+                const data = await res.json();
+                
+                if (data.error) {
+                    document.getElementById('metricsContainer').innerHTML = 
+                        `<div class="error">${data.error}</div>`;
+                    document.getElementById('backtestContainer').innerHTML = 
+                        `<div class="error">${data.error}</div>`;
+                    return;
+                }
+
+                // Metrics
+                const metricsHtml = `
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-label">Symbol</div>
+                            <div class="metric-value">${data.symbol}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">RMSE (LSTM)</div>
+                            <div class="metric-value">${data.rmse.lstm.toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">RMSE (GRU)</div>
+                            <div class="metric-value">${data.rmse.gru.toFixed(2)}</div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('metricsContainer').innerHTML = metricsHtml;
+
+                // Backtest
+                const backtestHtml = `
+                    <div class="stats-row">
+                        <div class="metric">
+                            <div class="metric-label">Strategy Return (LSTM)</div>
+                            <div class="metric-value ${data.backtest.lstm.strategy_total_return >= 0 ? 'positive' : 'negative'}">
+                                ${(data.backtest.lstm.strategy_total_return * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Buy & Hold Return</div>
+                            <div class="metric-value ${data.backtest.lstm.buyhold_total_return >= 0 ? 'positive' : 'negative'}">
+                                ${(data.backtest.lstm.buyhold_total_return * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Strategy Return (GRU)</div>
+                            <div class="metric-value ${data.backtest.gru.strategy_total_return >= 0 ? 'positive' : 'negative'}">
+                                ${(data.backtest.gru.strategy_total_return * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Buy & Hold Return</div>
+                            <div class="metric-value ${data.backtest.gru.buyhold_total_return >= 0 ? 'positive' : 'negative'}">
+                                ${(data.backtest.gru.buyhold_total_return * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('backtestContainer').innerHTML = backtestHtml;
+            } catch (error) {
+                document.getElementById('metricsContainer').innerHTML = 
+                    `<div class="error">Failed to load metrics: ${error.message}</div>`;
+                document.getElementById('backtestContainer').innerHTML = 
+                    `<div class="error">Failed to load backtest: ${error.message}</div>`;
+            }
+        }
+
+        async function makePrediction() {
+            const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+            const model = document.getElementById('model').value;
+            const seqLen = parseInt(document.getElementById('seqLen').value) || 60;
+            const resultDiv = document.getElementById('predictionResult');
+            const btn = document.getElementById('predictBtn');
+
+            if (!symbol) {
+                resultDiv.innerHTML = '<div class="error">Please enter a symbol</div>';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Predicting...';
+            resultDiv.innerHTML = '<div class="loading">Making prediction...</div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol, model, seq_len: seqLen })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                } else {
+                    const isPositive = data.delta >= 0;
+                    resultDiv.innerHTML = `
+                        <div class="prediction-result">
+                            <div class="prediction-row">
+                                <span class="prediction-label">Symbol</span>
+                                <span class="prediction-value">${data.symbol}</span>
+                            </div>
+                            <div class="prediction-row">
+                                <span class="prediction-label">Last Close Price</span>
+                                <span class="prediction-value">$${data.last_close.toFixed(2)}</span>
+                            </div>
+                            <div class="prediction-row">
+                                <span class="prediction-label">Predicted Next Close (${model.toUpperCase()})</span>
+                                <span class="prediction-value ${isPositive ? 'positive' : 'negative'}">
+                                    $${data.prediction_close.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="prediction-row">
+                                <span class="prediction-label">Expected Change</span>
+                                <span class="prediction-value ${isPositive ? 'positive' : 'negative'}">
+                                    ${isPositive ? '+' : ''}${data.delta.toFixed(2)} (${((data.delta / data.last_close) * 100).toFixed(2)}%)
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Failed to make prediction: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Predict Next Price';
+            }
+        }
+    </script>
+</body>
+</html>
